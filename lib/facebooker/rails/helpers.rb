@@ -515,6 +515,11 @@ module Facebooker
         tag "fb:google-analytics", stringify_vals(options.merge(:uacct => uacct))
       end
       
+      # fb_header
+      def fb_header(header)
+       "<fb:header>#{header}</fb:header>"
+      end
+      
       # Render if-is-app-user tag
       # This tag renders the enclosing content only if the user specified has accepted the terms of service for the application. 
       # Use fb_if_user_has_added_app to determine wether the user has added the app.
@@ -597,6 +602,11 @@ module Facebooker
         content_tag("fb:board", title, stringify_vals(options.merge(:xid=>xid)))
       end
       
+      # Renders an 'Add to Profile Tab' button
+      def fb_add_profile_tab
+        "<fb:add-profile-tab />"
+      end
+      
       # Renders an 'Add to Profile' button
       # The button allows a user to add condensed profile box to the main profile
       def fb_add_profile_section
@@ -667,8 +677,21 @@ module Facebooker
       end
       
       # Renders a standard 'Share' button for the specified URL.
-      def fb_share_button(url)
-        content_tag "fb:share-button",nil,:class=>"url",:href=>url
+      # Renders a 'meta' button for the specified URL.
+      def fb_share_button(url, options = {})
+        if options.blank?
+          content_tag "fb:share-button",nil,:class=>"url",:href=>url
+        else
+          content = content_tag("link",nil,:rel=>"target_url",:href=>url)
+          options.each do |key,value|
+            if key == 'image_src'
+              content += content_tag("link",nil,:rel=>"image_src",:href=>url)
+            else
+              content += content_tag("meta",nil,:name=>key,:content=>value)
+            end
+          end
+          content_tag("fb:share-button",content+token_tag,:class=>"meta")
+        end
       end
       
       # Renders the FBML on a Facebook server inside an iframe.
